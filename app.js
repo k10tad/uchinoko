@@ -136,4 +136,6 @@ document.addEventListener('click',event=>{
  if(button.dataset.action==='vaccine-add'){event.preventDefault();event.stopImmediatePropagation();vaccineModal()}
  if(button.dataset.action==='vaccine-delete'){event.preventDefault();event.stopImmediatePropagation();deleteVaccine(button.dataset.id)}
 },true);
+const baseRenderWithFeatures=render;
+render=function(){baseRenderWithFeatures();applyHistoryLimits()};
 render();
