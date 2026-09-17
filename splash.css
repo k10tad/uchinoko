@@ -1,0 +1,12 @@
+/* A short, non-blocking welcome using the existing app icon. */
+.app-splash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#fffaf2 0%,#f6eddf 65%,#efe0cc 100%);color:#75513e;pointer-events:none;animation:splash-away .4s ease 1.15s forwards}
+.splash-content{text-align:center;padding:24px;animation:splash-arrive .65s cubic-bezier(.2,.7,.3,1) both}
+.splash-icon{display:block;width:92px;height:92px;margin:0 auto 22px;border-radius:30px;box-shadow:0 12px 32px #75513e18;animation:splash-breathe 1.15s ease-in-out both}
+.splash-name{font-family:'Hiragino Maru Gothic ProN','Yu Gothic',Meiryo,sans-serif;font-size:24px;font-weight:600;letter-spacing:.08em;line-height:1.6;margin:0}
+.splash-dots{display:flex;justify-content:center;gap:9px;margin-top:20px;height:12px}.splash-dots i{width:6px;height:6px;border-radius:50%;background:#bb9878;animation:splash-dot .8s ease-in-out both}.splash-dots i:nth-child(2){animation-delay:.12s}.splash-dots i:nth-child(3){animation-delay:.24s}
+@keyframes splash-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes splash-breathe{0%{transform:scale(.91)}55%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes splash-dot{0%,100%{opacity:.4;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+@keyframes splash-away{to{opacity:0;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){.app-splash{animation:splash-away .1s linear .1s forwards}.splash-content,.splash-icon,.splash-dots i{animation:none}}
+@media print{.app-splash{display:none}}
