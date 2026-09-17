@@ -1,5 +1,5 @@
-const CACHE='uchinoko-app-1.0.2';
-const ASSETS=["./", "index.html", "style.css?v=6", "app.js?v=1.0.2", "media.js?v=6", "diary.js?v=6", "grooming.js?v=6", "modal-layout.js?v=6", "pwa.js", "splash.css?v=1.0.2", "splash.js?v=1.0.2", "dog.jpg", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
+const CACHE='uchinoko-app-1.0.3';
+const ASSETS=["./", "index.html", "style.css?v=1.0.3", "app.js?v=1.0.3", "media.js?v=6", "diary.js?v=6", "grooming.js?v=6", "modal-layout.js?v=6", "pwa.js", "splash.css?v=1.0.2", "splash.js?v=1.0.2", "dog.jpg", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('uchinoko-app-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
