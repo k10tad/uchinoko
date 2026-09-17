@@ -24,6 +24,9 @@ function saveFeeding(){
  pet().feeding=values;
  if(persist()){render();toast('ごはん量の目安を保存しました')}
 }
-function assignedTo(item,pid=petId){return!Array.isArray(item?.pets)||item.pets.length===0||item.pets.includes(pid)}
+function assignedTo(item,pid=petId){
+ const owners=Array.isArray(item?.pets)?item.pets:[];
+ return pid===(owners[0]||db.pets[0]?.id);
+}
 function petHospitals(pid=petId){return(db.hospitals||[]).filter(item=>assignedTo(item,pid))}
-function assignmentChecks(selected){return`<label>登録する子</label>${db.pets.map(p=>`<label class="check"><input name="assignedPets" type="checkbox" value="${p.id}" ${selected.includes(p.id)?'checked':''}>${esc(p.name)}</label>`).join('')}`}
+function assignmentChecks(selected){const owner=selected.includes(petId)?petId:(selected[0]||petId);return select('登録する子','assignedPet',db.pets.map(p=>[p.id,p.name]),owner)}

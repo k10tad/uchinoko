@@ -117,12 +117,12 @@ settings=function(){
  return html;
 };
 function hospitalEditor(id){
- const old=db.hospitals.find(x=>x.id===id),selected=old?(Array.isArray(old.pets)&&old.pets.length?old.pets:db.pets.map(p=>p.id)):[petId];
+ const old=db.hospitals.find(x=>x.id===id),selected=old?(Array.isArray(old.pets)&&old.pets.length?old.pets:[db.pets[0].id]):[petId];
  modal(old?'かかりつけ病院を編集':'かかりつけ病院を登録',field('病院名','name',old?.name||'','text','required maxlength="100"')+field('電話番号（任意）','phone',old?.phone||'','tel')+field('住所（任意）','address',old?.address||'')+textarea('メモ（任意）','memo',old?.memo||'')+assignmentChecks(selected),f=>{
-  const pets=f.getAll('assignedPets'),name=String(f.get('name')||'').trim();
-  if(!pets.length){toast('登録する子を選んでください');return false}
+  const owner=f.get('assignedPet'),name=String(f.get('name')||'').trim();
+  if(!owner){toast('登録する子を選んでください');return false}
   if(!name){toast('病院名を入力してください');return false}
-  const value={id:old?.id||uid(),name,phone:f.get('phone'),address:f.get('address'),memo:f.get('memo'),pets};
+  const value={id:old?.id||uid(),name,phone:f.get('phone'),address:f.get('address'),memo:f.get('memo'),pets:[owner]};
   if(old)Object.assign(old,value);else db.hospitals.push(value);
   commit('かかりつけ病院を保存しました');
  });
