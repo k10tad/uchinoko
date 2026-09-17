@@ -100,4 +100,40 @@ if(a==='reset-demo')return confirmAction('お試しデータを消す','入力�
 function validateBackup(x){if(x.data?.groomingFacilities!==undefined&&(!Array.isArray(x.data.groomingFacilities)||x.data.groomingFacilities.some(f=>typeof f.id!=='string'||typeof f.name!=='string')))throw Error('施設情報が不正です');if(![1,2].includes(x.version)||!x.data||!Array.isArray(x.data.pets)||x.data.pets.length!==2||!['hospitals','meds','events','logs','notes'].every(k=>Array.isArray(x.data[k])))throw Error('この手帖のバックアップではありません');for(const p of x.data.pets)if(typeof p.id!=='string'||typeof p.name!=='string'||!Array.isArray(p.photos)||p.photos.length>3)throw Error('ペット情報が不正です');for(const m of x.data.meds)if(!Number.isFinite(m.stock)||m.stock<0||!Array.isArray(m.history)||m.daily!==null&&(!Number.isFinite(m.daily)||m.daily<=0))throw Error('お薬の数が不正です');for(const e of x.data.events)if(!Array.isArray(e.pets)||!Array.isArray(e.done)||!/^\d{4}-\d{2}-\d{2}$/.test(e.date))throw Error('予定の内容が不正です')}
 document.addEventListener('change',e=>{if(e.target.id==='allpets'){allPets=e.target.checked;render()}if(e.target.id==='auto-slide'){pet().auto=e.target.checked;persist()}if(e.target.id==='f-summary-from'||e.target.id==='f-summary-to'){const from=$('#f-summary-from').value,to=$('#f-summary-to').value;if(!from||!to||from>to){toast('開始日と終了日を確認してね');return}summaryFrom=from;summaryTo=to;render()}});
 if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'read_pet_overview',title:'ペットの記録を確認',description:'現在の手帖のペットと薬の残数、通院予定を読み取る',inputSchema:{type:'object',properties:{petId:{type:'string'}},required:['petId'],additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute(input){if(!input||typeof input.petId!=='string'||!db.pets.some(p=>p.id===input.petId))throw Error('Unknown pet');return{pet:db.pets.find(p=>p.id===input.petId).name,medications:db.meds.filter(m=>m.pet===input.petId&&m.active!==false).map(m=>({name:m.name,remaining:m.stock,daily:m.daily})),appointments:db.events.filter(e=>!isGrooming(e)&&e.pets.includes(input.petId)).map(e=>({date:e.date,time:e.time,hospital:hospital(e.hospital)}))}}})).catch(()=>{})}catch{}}
+const baseHome=home;
+home=function(){return baseHome().replace('</div><div class="grid section-space">','</div>'+feedingCard()+'<div class="grid section-space">')};
+function hospitalSettingsCard(){
+ const p=pet(),items=petHospitals();
+ return`<section class="card settings-block"><div class="row between"><div><h3>かかりつけ病院</h3><span class="small muted">${esc(p.name)}の登録</span></div>${action('hospital','＋ 追加','link')}</div>${items.map(h=>`<div class="hospital"><b>${esc(h.name)}</b><div class="small muted">${esc(h.phone||'')} ${esc(h.address||'')}</div><p class="small">${esc(h.memo||'')}</p>${action('hospital','編集','link',`data-id="${h.id}"`)}</div>`).join('')||'<p class="small muted">この子のかかりつけ病院は未登録です。</p>'}</section>`;
+}
+const baseSettings=settings;
+settings=function(){
+ let html=baseSettings(),start=html.indexOf('<section class="card settings-block"><div class="row between"><h3>かかりつけ病院');
+ if(start<0)return html;
+ const end=html.indexOf('</section>',start);
+ html=html.slice(0,start)+hospitalSettingsCard()+html.slice(end+10);
+ const medHeading=html.indexOf('<h3>お薬の管理</h3>'),medEnd=medHeading<0?-1:html.indexOf('</section>',medHeading);
+ if(medEnd>=0)html=html.slice(0,medEnd+10)+preventiveSettings()+html.slice(medEnd+10);
+ return html;
+};
+function hospitalEditor(id){
+ const old=db.hospitals.find(x=>x.id===id),selected=old?(Array.isArray(old.pets)&&old.pets.length?old.pets:db.pets.map(p=>p.id)):[petId];
+ modal(old?'かかりつけ病院を編集':'かかりつけ病院を登録',field('病院名','name',old?.name||'','text','required maxlength="100"')+field('電話番号（任意）','phone',old?.phone||'','tel')+field('住所（任意）','address',old?.address||'')+textarea('メモ（任意）','memo',old?.memo||'')+assignmentChecks(selected),f=>{
+  const pets=f.getAll('assignedPets'),name=String(f.get('name')||'').trim();
+  if(!pets.length){toast('登録する子を選んでください');return false}
+  if(!name){toast('病院名を入力してください');return false}
+  const value={id:old?.id||uid(),name,phone:f.get('phone'),address:f.get('address'),memo:f.get('memo'),pets};
+  if(old)Object.assign(old,value);else db.hospitals.push(value);
+  commit('かかりつけ病院を保存しました');
+ });
+}
+document.addEventListener('click',event=>{
+ const button=event.target.closest?.('[data-action]');if(!button)return;
+ if(button.dataset.action==='feeding-save'){event.preventDefault();event.stopImmediatePropagation();saveFeeding()}
+ if(button.dataset.action==='hospital'){event.preventDefault();event.stopImmediatePropagation();hospitalEditor(button.dataset.id)}
+ if(button.dataset.action==='heartworm-settings'){event.preventDefault();event.stopImmediatePropagation();heartwormSettingsModal()}
+ if(button.dataset.action==='heartworm-dose'){event.preventDefault();event.stopImmediatePropagation();heartwormDoseModal()}
+ if(button.dataset.action==='vaccine-add'){event.preventDefault();event.stopImmediatePropagation();vaccineModal()}
+ if(button.dataset.action==='vaccine-delete'){event.preventDefault();event.stopImmediatePropagation();deleteVaccine(button.dataset.id)}
+},true);
 render();
