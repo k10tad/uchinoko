@@ -11,3 +11,4 @@ self.addEventListener('fetch',event=>{
  }
  if(known)event.respondWith(caches.open(CACHE).then(async cache=>(await cache.match(request))||fetch(request)));
 });
+
